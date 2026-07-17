@@ -1,3 +1,4 @@
+import torch
 import numpy as np
 import faiss
 from database import get_path_by_faiss_id
@@ -8,7 +9,10 @@ FAISS_INDEX_PATH = "echo.index"
 def embed_text(query: str) -> np.ndarray:
     inputs = processor(text=[query], return_tensors="pt", padding=True)
     outputs = model.get_text_features(**inputs)
-    embedding = outputs.detach().numpy()
+    if isinstance(outputs, torch.Tensor):
+        embedding = outputs.detach().numpy()
+    else:
+        embedding = outputs.pooler_output.detach().numpy()
     faiss.normalize_L2(embedding)
     return embedding
 

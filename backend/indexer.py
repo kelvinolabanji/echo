@@ -18,7 +18,10 @@ def embed_image(path: str) -> np.ndarray | None:
         image = Image.open(path).convert("RGB")
         inputs = processor(images=image, return_tensors="pt")
         outputs = model.get_image_features(**inputs)
-        embedding = outputs.detach().numpy()
+        if hasattr(outputs, 'detach'):
+            embedding = outputs.detach().numpy()
+        else:
+            embedding = outputs.pooler_output.detach().numpy()
         faiss.normalize_L2(embedding)
         return embedding
     except Exception as e:
