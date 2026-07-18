@@ -1,4 +1,6 @@
 .venv/
+frontend/EchoApp/bin/
+frontend/EchoApp/obj/
 __pycache__/
 *.pyc
 *.db
