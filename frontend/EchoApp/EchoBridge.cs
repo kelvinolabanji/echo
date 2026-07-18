@@ -1,0 +1,60 @@
+using System.Runtime.InteropServices;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+namespace EchoApp
+{
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+    [ComVisible(true)]
+    public class EchoBridge
+    {
+        private static readonly HttpClient _http = new HttpClient();
+        private const string BASE_URL = "http://127.0.0.1:8000";
+
+        public string Search(string query)
+        {
+            try
+            {
+                var response = _http.GetStringAsync($"{BASE_URL}/search?q={Uri.EscapeDataString(query)}&top_k=20").Result;
+                return response;
+            }
+            catch
+            {
+                return "{\"results\": []}";
+            }
+        }
+
+        public string GetThumbnail(string path)
+        {
+            return $"{BASE_URL}/thumbnail?path={Uri.EscapeDataString(path)}";
+        }
+
+        public void OpenFile(string path)
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = path,
+                UseShellExecute = true
+            });
+        }
+
+        public void OpenInFolder(string path)
+        {
+            System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{path}\"");
+        }
+
+        public string IndexFolder(string folderPath)
+        {
+            try
+            {
+                var content = new StringContent($"", System.Text.Encoding.UTF8, "application/json");
+                var response = _http.PostAsync($"{BASE_URL}/index?folder={Uri.EscapeDataString(folderPath)}", content).Result;
+                return response.Content.ReadAsStringAsync().Result;
+            }
+            catch
+            {
+                return "{\"error\": \"Backend not running\"}";
+            }
+        }
+    }
+}
