@@ -1,6 +1,8 @@
-using System.Runtime.InteropServices;
+using System;
 using System.Net.Http;
-using System.Threading.Tasks;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace EchoApp
 {
@@ -47,7 +49,7 @@ namespace EchoApp
         {
             try
             {
-                var content = new StringContent($"", System.Text.Encoding.UTF8, "application/json");
+                var content = new StringContent("", System.Text.Encoding.UTF8, "application/json");
                 var response = _http.PostAsync($"{BASE_URL}/index?folder={Uri.EscapeDataString(folderPath)}", content).Result;
                 return response.Content.ReadAsStringAsync().Result;
             }
@@ -55,6 +57,26 @@ namespace EchoApp
             {
                 return "{\"error\": \"Backend not running\"}";
             }
+        }
+
+        public string PickFolder()
+        {
+            string result = "";
+            var thread = new Thread(() =>
+            {
+                var dialog = new FolderBrowserDialog()
+                {
+                    Description = "Select a folder to index with Echo",
+                    UseDescriptionForTitle = true,
+                    ShowNewFolderButton = false
+                };
+                if (dialog.ShowDialog() == DialogResult.OK)
+                    result = dialog.SelectedPath;
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+            return result;
         }
     }
 }

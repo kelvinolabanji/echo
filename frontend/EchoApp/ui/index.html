@@ -96,6 +96,35 @@
             color: rgba(0,0,0,0.3);
         }
 
+        #add-folder-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            opacity: 0.4;
+            transition: opacity 0.15s ease, background 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        #add-folder-btn:hover {
+            opacity: 0.8;
+            background: rgba(0,0,0,0.06);
+        }
+
+        #add-folder-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: #1a1a1a;
+            stroke-width: 2;
+            stroke-linecap: round;
+        }
+
         #status {
             font-size: 10.5px;
             color: rgba(0,0,0,0.4);
@@ -250,11 +279,17 @@
         <input
             type="text"
             id="search-input"
-            placeholder="Locate with Echo..."
+            placeholder="Search your photos..."
             autofocus
             spellcheck="false"
             autocomplete="off"
         />
+        <button id="add-folder-btn" title="Add folder to index">
+            <svg viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+        </button>
     </div>
 
     <div id="status"></div>
@@ -266,7 +301,7 @@
             <circle cx="8.5" cy="8.5" r="1.5"/>
             <polyline points="21 15 16 10 5 21"/>
         </svg>
-        <p>Type to search </p>
+        <p>Type to search your photos</p>
     </div>
 
     <div id="context-menu">
@@ -293,6 +328,7 @@
         const status = document.getElementById('status');
         const contextMenu = document.getElementById('context-menu');
         const emptyState = document.getElementById('empty-state');
+        const addFolderBtn = document.getElementById('add-folder-btn');
 
         let debounceTimer;
         let selectedPath = null;
@@ -364,6 +400,20 @@
                 grid.appendChild(item);
             });
         }
+
+        addFolderBtn.addEventListener('click', async () => {
+            try {
+                const folder = window.chrome.webview.hostObjects.sync.echo.PickFolder();
+                if (!folder) return;
+                status.textContent = 'Indexing ' + folder + '...';
+                emptyState.style.display = 'none';
+                const raw = window.chrome.webview.hostObjects.echo.IndexFolder(folder);
+                await raw;
+                status.textContent = 'Indexing started — results will appear as photos are processed';
+            } catch (e) {
+                status.textContent = 'Could not start indexing';
+            }
+        });
 
         document.getElementById('ctx-open').addEventListener('click', () => {
             if (selectedPath) window.chrome.webview.hostObjects.sync.echo.OpenFile(selectedPath);
