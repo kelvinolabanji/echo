@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import time
 
 DB_PATH = "echo.db"
 
@@ -11,7 +12,6 @@ def get_connection():
 def init_db():
     conn = get_connection()
     cursor = conn.cursor()
-
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS images (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,7 +22,6 @@ def init_db():
             indexed_at  REAL
         )
     """)
-
     conn.commit()
     conn.close()
 
@@ -38,7 +37,6 @@ def image_already_indexed(path: str, modified_at: float) -> bool:
     return result is not None
 
 def save_image(path: str, faiss_id: int, file_size: int, modified_at: float):
-    import time
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
@@ -71,3 +69,35 @@ def get_stats() -> dict:
     result = cursor.fetchone()
     conn.close()
     return {"total_indexed": result["total"]}
+
+def get_indexed_folders() -> list:
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT path FROM images")
+    rows = cursor.fetchall()
+    conn.close()
+    folders = {}
+    for row in rows:
+        folder = os.path.dirname(row["path"])
+        folders[folder] = folders.get(folder, 0) + 1
+    return [{"folder": f, "count": c} for f, c in sorted(folders.items())]
+
+def delete_images_by_folder(folder_path: str) -> int:
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        DELETE FROM images 
+        WHERE path LIKE ?
+    """, (folder_path + "%",))
+    deleted = cursor.rowcount
+    conn.commit()
+    conn.close()
+    return deleted
+
+def get_all_images_with_embeddings() -> list:
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT path, faiss_id FROM images ORDER BY faiss_id ASC")
+    results = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in results]
