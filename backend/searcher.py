@@ -1,3 +1,4 @@
+import os
 import torch
 import numpy as np
 import faiss
@@ -5,7 +6,19 @@ from database import get_path_by_faiss_id
 from model import model, processor
 
 FAISS_INDEX_PATH = "echo.index"
-MIN_SCORE = 0.23
+MIN_SCORE = 0.25
+
+_index = None
+
+def get_index():
+    global _index
+    if _index is None and os.path.exists(FAISS_INDEX_PATH):
+        _index = faiss.read_index(FAISS_INDEX_PATH)
+    return _index
+
+def reload_index():
+    global _index
+    _index = None
 
 def embed_text(query: str) -> np.ndarray:
     inputs = processor(text=[query], return_tensors="pt", padding=True)
@@ -18,12 +31,9 @@ def embed_text(query: str) -> np.ndarray:
     return embedding
 
 def search(query: str, top_k: int = 20) -> list:
-    try:
-        index = faiss.read_index(FAISS_INDEX_PATH)
-    except Exception:
-        return []
+    index = get_index()
 
-    if index.ntotal == 0:
+    if index is None or index.ntotal == 0:
         return []
 
     embedding = embed_text(query)

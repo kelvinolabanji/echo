@@ -1,4 +1,5 @@
 import os
+import hashlib
 import torch
 import numpy as np
 import faiss
@@ -12,8 +13,9 @@ from model import model, processor
 
 SUPPORTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 FAISS_INDEX_PATH = "echo.index"
+THUMBNAIL_DIR = "thumbnail_cache"
+THUMBNAIL_SIZE = (300, 300)
 
-# Global state
 _progress = {
     "running": False,
     "total": 0,
@@ -31,6 +33,24 @@ def get_progress() -> dict:
 
 def cancel_indexing():
     _cancel_event.set()
+
+def get_thumbnail_path(image_path: str) -> str:
+    hash_key = hashlib.md5(image_path.encode()).hexdigest()
+    return os.path.join(THUMBNAIL_DIR, f"{hash_key}.jpg")
+
+def generate_thumbnail(image_path: str) -> str | None:
+    try:
+        thumb_path = get_thumbnail_path(image_path)
+        if os.path.exists(thumb_path):
+            return thumb_path
+        os.makedirs(THUMBNAIL_DIR, exist_ok=True)
+        image = Image.open(image_path).convert("RGB")
+        image.thumbnail(THUMBNAIL_SIZE, Image.LANCZOS)
+        image.save(thumb_path, "JPEG", quality=85, optimize=True)
+        return thumb_path
+    except Exception as e:
+        print(f"Failed to generate thumbnail for {image_path}: {e}")
+        return None
 
 def get_or_create_index(dimension: int = 512) -> faiss.Index:
     if os.path.exists(FAISS_INDEX_PATH):
@@ -80,6 +100,9 @@ def rebuild_index():
     conn.close()
     faiss.write_index(index, FAISS_INDEX_PATH)
     print(f"Index rebuilt with {new_faiss_id} images.")
+
+    from searcher import reload_index
+    reload_index()
 
 def unindex_folder(folder_path: str):
     deleted = delete_images_by_folder(folder_path)
@@ -141,6 +164,7 @@ def index_folder(folder_path: str):
 
         file_size = os.path.getsize(path)
         save_image(path, faiss_id, file_size, modified_at)
+        generate_thumbnail(path)
         indexed += 1
 
         with _lock:
@@ -152,5 +176,8 @@ def index_folder(folder_path: str):
 
     with _lock:
         _progress["running"] = False
+
+    from searcher import reload_index
+    reload_index()
 
     print(f"Done. Indexed {indexed} new images, skipped {skipped}.")

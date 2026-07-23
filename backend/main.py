@@ -2,7 +2,7 @@ from fastapi import FastAPI, Query, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from database import get_stats, get_all_images, init_db, get_indexed_folders
-from indexer import index_folder, get_progress, cancel_indexing, unindex_folder
+from indexer import index_folder, get_progress, cancel_indexing, unindex_folder, get_thumbnail_path, THUMBNAIL_DIR
 from searcher import search
 import os
 
@@ -59,6 +59,9 @@ def list_images():
 
 @app.get("/thumbnail")
 def get_thumbnail(path: str):
-    if not os.path.exists(path):
-        return {"error": "File not found"}
-    return FileResponse(path)
+    thumb_path = get_thumbnail_path(path)
+    if os.path.exists(thumb_path):
+        return FileResponse(thumb_path, media_type="image/jpeg")
+    if os.path.exists(path):
+        return FileResponse(path)
+    return {"error": "File not found"}

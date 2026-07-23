@@ -59,6 +59,56 @@ namespace EchoApp
             }
         }
 
+        public string GetProgress()
+        {
+            try
+            {
+                return _http.GetStringAsync($"{BASE_URL}/index/progress").Result;
+            }
+            catch
+            {
+                return "{\"running\": false}";
+            }
+        }
+
+        public string CancelIndexing()
+        {
+            try
+            {
+                var content = new StringContent("", System.Text.Encoding.UTF8, "application/json");
+                return _http.PostAsync($"{BASE_URL}/index/cancel", content).Result.Content.ReadAsStringAsync().Result;
+            }
+            catch
+            {
+                return "{\"error\": \"Backend not running\"}";
+            }
+        }
+
+        public string GetFolders()
+        {
+            try
+            {
+                return _http.GetStringAsync($"{BASE_URL}/folders").Result;
+            }
+            catch
+            {
+                return "[]";
+            }
+        }
+
+        public string UnindexFolder(string folderPath)
+        {
+            try
+            {
+                var content = new StringContent("", System.Text.Encoding.UTF8, "application/json");
+                return _http.PostAsync($"{BASE_URL}/unindex?folder={Uri.EscapeDataString(folderPath)}", content).Result.Content.ReadAsStringAsync().Result;
+            }
+            catch
+            {
+                return "{\"error\": \"Backend not running\"}";
+            }
+        }
+
         public string PickFolder()
         {
             string result = "";

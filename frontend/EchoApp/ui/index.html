@@ -18,40 +18,34 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
-            background:
-                linear-gradient(
-                    160deg,
-                    rgba(255,255,255,0.13) 0%,
-                    rgba(255,255,255,0.04) 100%
-                );
-            border: 1px solid rgba(255,255,255,0.18);
-            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(48px) saturate(180%) brightness(1.05);
+            -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05);
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.7);
             overflow: hidden;
             box-shadow:
-                0 0 0 0.5px rgba(255,255,255,0.08) inset,
-                0 32px 80px rgba(0,0,0,0.55),
-                0 8px 24px rgba(0,0,0,0.3);
-            backdrop-filter: blur(40px) saturate(180%) brightness(1.1);
-            -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.1);
+                0 0 0 0.5px rgba(255,255,255,0.5) inset,
+                0 24px 64px rgba(0,0,0,0.25),
+                0 4px 16px rgba(0,0,0,0.12);
         }
 
         body::before {
             content: '';
             position: absolute;
             top: 0;
-            left: 16px;
-            right: 16px;
+            left: 20px;
+            right: 20px;
             height: 1px;
             background: linear-gradient(
                 90deg,
                 transparent,
-                rgba(255,255,255,0.35) 30%,
-                rgba(255,255,255,0.35) 70%,
+                rgba(255,255,255,0.9) 30%,
+                rgba(255,255,255,0.9) 70%,
                 transparent
             );
             z-index: 10;
             pointer-events: none;
-            border-radius: 1px;
         }
 
         .search-bar {
@@ -59,8 +53,8 @@
             align-items: center;
             gap: 14px;
             padding: 18px 24px;
-            border-bottom: 1px solid rgba(0,0,0,0.08);
-            background: rgba(255,255,255,0.06);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            background: rgba(255,255,255,0.3);
             flex-shrink: 0;
         }
 
@@ -68,7 +62,7 @@
             display: flex;
             align-items: center;
             flex-shrink: 0;
-            opacity: 0.4;
+            opacity: 0.35;
         }
 
         .search-icon svg {
@@ -93,41 +87,12 @@
         }
 
         #search-input::placeholder {
-            color: rgba(0,0,0,0.3);
-        }
-
-        #add-folder-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            opacity: 0.4;
-            transition: opacity 0.15s ease, background 0.15s ease;
-            flex-shrink: 0;
-        }
-
-        #add-folder-btn:hover {
-            opacity: 0.8;
-            background: rgba(0,0,0,0.06);
-        }
-
-        #add-folder-btn svg {
-            width: 18px;
-            height: 18px;
-            fill: none;
-            stroke: #1a1a1a;
-            stroke-width: 2;
-            stroke-linecap: round;
+            color: rgba(0,0,0,0.28);
         }
 
         #status {
             font-size: 10.5px;
-            color: rgba(0,0,0,0.4);
+            color: rgba(0,0,0,0.35);
             padding: 10px 24px 4px;
             min-height: 28px;
             letter-spacing: 0.08em;
@@ -139,7 +104,7 @@
         #results-grid {
             display: none;
             grid-template-columns: repeat(4, 1fr);
-            grid-auto-rows: 228px;
+            grid-auto-rows: 210px;
             gap: 10px;
             padding: 8px 20px 20px;
             overflow-y: auto;
@@ -151,23 +116,19 @@
             border-radius: 10px;
             overflow: hidden;
             cursor: pointer;
-            background: rgba(0,0,0,0.06);
-            border: 1px solid rgba(0,0,0,0.06);
+            background: rgba(255,255,255,0.4);
+            border: 1px solid rgba(255,255,255,0.6);
             transition:
                 filter 0.18s ease,
-                box-shadow 0.18s ease,
-                border-color 0.18s ease;
+                box-shadow 0.18s ease;
         }
 
         .result-item:hover {
-            filter: brightness(1.08);
-            box-shadow: 0 6px 24px rgba(0,0,0,0.2);
-            border-color: rgba(0,0,0,0.12);
+            filter: brightness(1.06);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
         }
 
-        .result-item:active {
-            filter: brightness(0.95);
-        }
+        .result-item:active { filter: brightness(0.95); }
 
         .result-item img {
             width: 100%;
@@ -182,7 +143,7 @@
             left: 0;
             right: 0;
             padding: 24px 8px 8px;
-            background: linear-gradient(transparent, rgba(0,0,0,0.65));
+            background: linear-gradient(transparent, rgba(0,0,0,0.6));
             font-size: 11px;
             opacity: 0;
             transition: opacity 0.15s ease;
@@ -192,9 +153,7 @@
             color: rgba(255,255,255,0.95);
         }
 
-        .result-item:hover .overlay {
-            opacity: 1;
-        }
+        .result-item:hover .overlay { opacity: 1; }
 
         #empty-state {
             display: flex;
@@ -203,13 +162,13 @@
             justify-content: center;
             flex: 1;
             gap: 12px;
-            color: rgba(0,0,0,0.2);
+            color: rgba(0,0,0,0.18);
         }
 
         #empty-state svg {
             width: 40px;
             height: 40px;
-            stroke: rgba(0,0,0,0.15);
+            stroke: rgba(0,0,0,0.12);
             fill: none;
             stroke-width: 1.5;
             stroke-linecap: round;
@@ -224,14 +183,14 @@
         #context-menu {
             display: none;
             position: fixed;
-            background: rgba(255,255,255,0.7);
+            background: rgba(255,255,255,0.75);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.8);
             border-radius: 10px;
             padding: 4px;
             z-index: 1000;
             min-width: 190px;
-            box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
         }
 
         .context-item {
@@ -242,28 +201,23 @@
             border-radius: 6px;
             cursor: pointer;
             font-size: 13px;
-            color: rgba(0,0,0,0.85);
+            color: rgba(0,0,0,0.8);
             transition: background 0.1s ease;
         }
 
-        .context-item svg {
-            stroke: rgba(0,0,0,0.6);
-        }
-
-        .context-item:hover {
-            background: rgba(0,0,0,0.06);
-        }
+        .context-item svg { stroke: rgba(0,0,0,0.5); }
+        .context-item:hover { background: rgba(0,0,0,0.05); }
 
         .context-separator {
             height: 1px;
-            background: rgba(0,0,0,0.08);
+            background: rgba(0,0,0,0.06);
             margin: 3px 8px;
         }
 
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb {
-            background: rgba(0,0,0,0.15);
+            background: rgba(0,0,0,0.12);
             border-radius: 2px;
         }
     </style>
@@ -284,12 +238,6 @@
             spellcheck="false"
             autocomplete="off"
         />
-        <button id="add-folder-btn" title="Add folder to index">
-            <svg viewBox="0 0 24 24">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-        </button>
     </div>
 
     <div id="status"></div>
@@ -328,60 +276,75 @@
         const status = document.getElementById('status');
         const contextMenu = document.getElementById('context-menu');
         const emptyState = document.getElementById('empty-state');
-        const addFolderBtn = document.getElementById('add-folder-btn');
 
-        let debounceTimer;
+        let debounceTimer = null;
         let selectedPath = null;
+        let activeSearchSequence = 0; // Incremented on every keystroke to block old async responses
+        const DEBOUNCE_DELAY_MS = 350;  // 350ms: Natural pause after typing
 
         window.addEventListener('load', () => input.focus());
 
         input.addEventListener('input', () => {
             clearTimeout(debounceTimer);
+            activeSearchSequence++; // Instantly invalidate any in-flight search request
+
             const query = input.value.trim();
 
             if (!query) {
-                grid.innerHTML = '';
+                grid.replaceChildren();
                 grid.style.display = 'none';
                 status.textContent = '';
                 emptyState.style.display = 'flex';
                 return;
             }
 
-            status.textContent = 'Searching...';
-            emptyState.style.display = 'none';
-            grid.style.display = 'grid';
-            debounceTimer = setTimeout(() => search(query), 200);
+            // Fire almost immediately once fingers pause
+            debounceTimer = setTimeout(() => {
+                executeSearch(query);
+            }, DEBOUNCE_DELAY_MS);
         });
 
-        async function search(query) {
+        async function executeSearch(query) {
+            const currentSequence = activeSearchSequence;
+            status.textContent = 'Searching...';
+
             try {
                 const raw = window.chrome.webview.hostObjects.echo.Search(query);
                 const data = JSON.parse(await raw);
+
+                // Ignore result if user resumed typing while Python was processing
+                if (currentSequence !== activeSearchSequence) {
+                    return;
+                }
+
+                emptyState.style.display = 'none';
                 renderResults(data.results);
             } catch (e) {
-                status.textContent = 'Backend not available';
+                if (currentSequence === activeSearchSequence) {
+                    status.textContent = 'Backend not available';
+                }
             }
         }
 
         function renderResults(results) {
-            grid.innerHTML = '';
+            grid.replaceChildren();
 
             if (!results || results.length === 0) {
+                grid.style.display = 'none';
                 status.textContent = 'No results found';
                 return;
             }
 
-            status.textContent = `${results.length} results`;
+            const fragment = document.createDocumentFragment();
 
             results.forEach(r => {
                 const item = document.createElement('div');
                 item.className = 'result-item';
-
                 const thumbnailUrl = window.chrome.webview.hostObjects.sync.echo.GetThumbnail(r.path);
                 const filename = r.path.split('\\').pop();
-
+                
                 item.innerHTML = `
-                    <img src="${thumbnailUrl}" alt="${filename}" loading="lazy" />
+                    <img src="${thumbnailUrl}" alt="${filename}" loading="eager" />
                     <div class="overlay">${filename}</div>
                 `;
 
@@ -397,23 +360,13 @@
                     contextMenu.style.top = e.clientY + 'px';
                 });
 
-                grid.appendChild(item);
+                fragment.appendChild(item);
             });
-        }
 
-        addFolderBtn.addEventListener('click', async () => {
-            try {
-                const folder = window.chrome.webview.hostObjects.sync.echo.PickFolder();
-                if (!folder) return;
-                status.textContent = 'Indexing ' + folder + '...';
-                emptyState.style.display = 'none';
-                const raw = window.chrome.webview.hostObjects.echo.IndexFolder(folder);
-                await raw;
-                status.textContent = 'Indexing started — results will appear as photos are processed';
-            } catch (e) {
-                status.textContent = 'Could not start indexing';
-            }
-        });
+            grid.appendChild(fragment);
+            grid.style.display = 'grid';
+            status.textContent = `${results.length} results`;
+        }
 
         document.getElementById('ctx-open').addEventListener('click', () => {
             if (selectedPath) window.chrome.webview.hostObjects.sync.echo.OpenFile(selectedPath);

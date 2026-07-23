@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Echo Folders</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            background: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI Variable Display', 'Segoe UI', sans-serif;
+            color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(48px) saturate(180%) brightness(1.05);
+            -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05);
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            overflow: hidden;
+            box-shadow:
+                0 0 0 0.5px rgba(255,255,255,0.5) inset,
+                0 24px 64px rgba(0,0,0,0.25),
+                0 4px 16px rgba(0,0,0,0.12);
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 20px;
+            right: 20px;
+            height: 1px;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255,255,255,0.9) 30%,
+                rgba(255,255,255,0.9) 70%,
+                transparent
+            );
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 24px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            background: rgba(255,255,255,0.3);
+            flex-shrink: 0;
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .header h1 {
+            font-size: 15px;
+            font-weight: 500;
+            color: #1a1a1a;
+            letter-spacing: -0.01em;
+        }
+
+        .header p {
+            font-size: 11px;
+            color: rgba(0,0,0,0.35);
+        }
+
+        #add-btn {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 16px;
+            background: #0078d4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: inherit;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        #add-btn:hover { background: #006cbe; }
+
+        #add-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: none;
+            stroke: white;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+        }
+
+        #progress-section {
+            display: none;
+            padding: 12px 24px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            background: rgba(0,120,212,0.04);
+            flex-shrink: 0;
+        }
+
+        .progress-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        #progress-label {
+            font-size: 11px;
+            color: rgba(0,0,0,0.45);
+            letter-spacing: 0.02em;
+        }
+
+        #cancel-btn {
+            font-size: 11px;
+            color: #c0392b;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            opacity: 0.7;
+            transition: opacity 0.15s;
+        }
+
+        #cancel-btn:hover { opacity: 1; }
+
+        #progress-track {
+            height: 3px;
+            background: rgba(0,0,0,0.08);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        #progress-fill {
+            height: 100%;
+            background: #0078d4;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        #folder-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .folder-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.55);
+            border: 1px solid rgba(255,255,255,0.7);
+            transition: background 0.15s ease;
+        }
+
+        .folder-row:hover {
+            background: rgba(255,255,255,0.75);
+        }
+
+        .folder-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(0,120,212,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .folder-icon svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: #0078d4;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+        }
+
+        .folder-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .folder-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1a1a1a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .folder-meta {
+            font-size: 11px;
+            color: rgba(0,0,0,0.35);
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .remove-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(192,57,43,0.2);
+            background: rgba(255,255,255,0.5);
+            color: #c0392b;
+            font-size: 12px;
+            font-family: inherit;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background 0.15s ease;
+        }
+
+        .remove-btn:hover {
+            background: rgba(192,57,43,0.08);
+        }
+
+        .remove-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        #empty-state {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            gap: 12px;
+            color: rgba(0,0,0,0.18);
+            padding: 40px;
+        }
+
+        #empty-state svg {
+            width: 40px;
+            height: 40px;
+            stroke: rgba(0,0,0,0.1);
+            fill: none;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+        }
+
+        #empty-state p {
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        #empty-state small {
+            font-size: 11px;
+            color: rgba(0,0,0,0.14);
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.1);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h1>Indexed Folders</h1>
+            <p id="header-subtitle">Manage which folders Echo searches</p>
+        </div>
+        <button id="add-btn">
+            <svg viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Add Folder
+        </button>
+    </div>
+
+    <div id="progress-section">
+        <div class="progress-top">
+            <span id="progress-label">Starting...</span>
+            <button id="cancel-btn">Cancel</button>
+        </div>
+        <div id="progress-track">
+            <div id="progress-fill"></div>
+        </div>
+    </div>
+
+    <div id="folder-list"></div>
+
+    <div id="empty-state">
+        <svg viewBox="0 0 24 24">
+            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+        </svg>
+        <p>No folders indexed yet</p>
+        <small>Click "Add Folder" to get started</small>
+    </div>
+
+    <script>
+        const folderList = document.getElementById('folder-list');
+        const emptyState = document.getElementById('empty-state');
+        const progressSection = document.getElementById('progress-section');
+        const progressFill = document.getElementById('progress-fill');
+        const progressLabel = document.getElementById('progress-label');
+        const headerSubtitle = document.getElementById('header-subtitle');
+
+        let progressTimer = null;
+
+        window.addEventListener('load', () => {
+            loadFolders();
+            checkProgress();
+        });
+
+        async function loadFolders() {
+            folderList.innerHTML = '';
+            try {
+                const raw = window.chrome.webview.hostObjects.echo.GetFolders();
+                const folders = JSON.parse(await raw);
+
+                if (!folders || folders.length === 0) {
+                    emptyState.style.display = 'flex';
+                    headerSubtitle.textContent = 'Manage which folders Echo searches';
+                    return;
+                }
+
+                emptyState.style.display = 'none';
+                const total = folders.reduce((sum, f) => sum + f.count, 0);
+                headerSubtitle.textContent = `${total} photos across ${folders.length} folder${folders.length !== 1 ? 's' : ''}`;
+
+                folders.forEach(f => {
+                    const name = f.folder.split('\\').pop() || f.folder;
+                    const row = document.createElement('div');
+                    row.className = 'folder-row';
+                    row.innerHTML = `
+                        <div class="folder-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+                            </svg>
+                        </div>
+                        <div class="folder-info">
+                            <div class="folder-name">${name}</div>
+                            <div class="folder-meta">${f.count} photos · ${f.folder}</div>
+                        </div>
+                        <button class="remove-btn" data-folder="${f.folder}">Remove</button>
+                    `;
+                    row.querySelector('.remove-btn').addEventListener('click', async (e) => {
+                        const folder = e.target.dataset.folder;
+                        e.target.textContent = 'Removing...';
+                        e.target.disabled = true;
+                        window.chrome.webview.hostObjects.echo.UnindexFolder(folder);
+                        setTimeout(() => loadFolders(), 1500);
+                    });
+                    folderList.appendChild(row);
+                });
+            } catch (e) {
+                emptyState.style.display = 'flex';
+            }
+        }
+
+        document.getElementById('add-btn').addEventListener('click', async () => {
+            try {
+                const folder = window.chrome.webview.hostObjects.sync.echo.PickFolder();
+                if (!folder) return;
+                window.chrome.webview.hostObjects.echo.IndexFolder(folder);
+                startProgressPolling();
+            } catch (e) {}
+        });
+
+        document.getElementById('cancel-btn').addEventListener('click', () => {
+            window.chrome.webview.hostObjects.echo.CancelIndexing();
+            stopProgress();
+        });
+
+        async function checkProgress() {
+            try {
+                const raw = window.chrome.webview.hostObjects.echo.GetProgress();
+                const p = JSON.parse(await raw);
+                if (p.running) startProgressPolling();
+            } catch (e) {}
+        }
+
+        function startProgressPolling() {
+            progressSection.style.display = 'block';
+            clearInterval(progressTimer);
+            progressTimer = setInterval(async () => {
+                try {
+                    const raw = window.chrome.webview.hostObjects.echo.GetProgress();
+                    const p = JSON.parse(await raw);
+
+                    if (p.total > 0) {
+                        const pct = Math.round((p.indexed + p.skipped) / p.total * 100);
+                        progressFill.style.width = pct + '%';
+                        progressLabel.textContent = `${p.indexed} indexed · ${p.skipped} skipped · ${p.total} total${p.current_file ? ' · ' + p.current_file : ''}`;
+                    } else {
+                        progressLabel.textContent = 'Scanning folder...';
+                    }
+
+                    if (!p.running) {
+                        stopProgress();
+                        loadFolders();
+                    }
+                } catch (e) {
+                    stopProgress();
+                }
+            }, 800);
+        }
+
+        function stopProgress() {
+            clearInterval(progressTimer);
+            progressSection.style.display = 'none';
+            progressFill.style.width = '0%';
+        }
+    </script>
+</body>
+</html>
