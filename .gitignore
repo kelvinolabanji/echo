@@ -7,3 +7,4 @@ __pycache__/
 *.index
 models/
 .env
+backend\thumbnail_cache
