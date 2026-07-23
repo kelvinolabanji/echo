@@ -109,6 +109,39 @@ def unindex_folder(folder_path: str):
     print(f"Deleted {deleted} images from {folder_path}, rebuilding index...")
     rebuild_index()
 
+def index_single_file(path: str):
+    """Indexes or updates a single image file without modifying global progress state."""
+    if not os.path.exists(path):
+        return
+
+    if os.path.splitext(path)[1].lower() not in SUPPORTED_EXTENSIONS:
+        return
+
+    init_db()
+    
+    modified_at = os.path.getmtime(path)
+    if image_already_indexed(path, modified_at):
+        return  # File is already indexed and up to date
+
+    embedding = embed_image(path)
+    if embedding is None:
+        return
+
+    index = get_or_create_index()
+    faiss_id = index.ntotal
+    index.add(embedding)
+
+    file_size = os.path.getsize(path)
+    save_image(path, faiss_id, file_size, modified_at)
+    generate_thumbnail(path)
+
+    faiss.write_index(index, FAISS_INDEX_PATH)
+
+    from searcher import reload_index
+    reload_index()
+
+    print(f"[Watcher] Successfully indexed single file: {path}")
+
 def index_folder(folder_path: str):
     global _progress
     _cancel_event.clear()
