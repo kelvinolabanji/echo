@@ -1,17 +1,8 @@
 // BackendDownloader.cs
 //
 // Ensures the backend (echo-backend.exe + CLIP weights) is present before
-// EchoApp tries to spawn it. If missing — i.e. first run after a fresh
-// install — downloads the backend package and extracts it.
-//
-// Wire this in wherever you currently spawn the backend process (AppContext.cs),
-// and call EnsureBackendInstalledAsync() before Process.Start on echo-backend.exe.
-//
-// You'll need to fill in BackendDownloadUrl and ExpectedSha256 once you've
-// zipped dist\echo-backend + your CLIP weights folder and uploaded it
-// (e.g. as a GitHub Release asset — those URLs look like:
-//   https://github.com/{user}/{repo}/releases/download/{tag}/echo-backend.zip
-// which also gives you a stable direct-download link with no server needed).
+// EchoApp spawns it. On first run after install, downloads the backend
+// package from GitHub Releases, verifies its checksum, and extracts it.
 
 using System;
 using System.IO;
@@ -25,7 +16,6 @@ namespace EchoApp
 {
     public class BackendDownloader
     {
-        // TODO: fill these in once the package is hosted
         private const string BackendDownloadUrl =
             "https://github.com/kelvinolabanji/echo/releases/download/v1.0.1/echo-backend.zip";
 
