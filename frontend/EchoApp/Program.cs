@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -12,7 +13,11 @@ namespace EchoApp
             if (!isNewInstance) return;
 
             ApplicationConfiguration.Initialize();
-            Application.Run(new AppContext());
+
+            // BootstrapAppContext kicks off backend setup (downloading it on
+            // first run if needed) as its first action once the message loop
+            // is already running, then hands off to the real AppContext.
+            Application.Run(new BootstrapAppContext());
         }
     }
 }

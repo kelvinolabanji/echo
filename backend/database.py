@@ -1,8 +1,7 @@
 import sqlite3
 import os
 import time
-
-DB_PATH = "echo.db"
+from paths import DB_PATH
 
 def get_connection():
     conn = sqlite3.connect(DB_PATH)

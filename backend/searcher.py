@@ -4,8 +4,8 @@ import numpy as np
 import faiss
 from database import get_path_by_faiss_id
 from model import model, processor
+from paths import FAISS_INDEX_PATH
 
-FAISS_INDEX_PATH = "echo.index"
 MIN_SCORE = 0.25
 
 _index = None

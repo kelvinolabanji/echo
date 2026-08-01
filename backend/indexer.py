@@ -10,10 +10,9 @@ from database import (
     get_all_images_with_embeddings, delete_images_by_folder
 )
 from model import model, processor
+from paths import FAISS_INDEX_PATH, THUMBNAIL_DIR
 
 SUPPORTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
-FAISS_INDEX_PATH = "echo.index"
-THUMBNAIL_DIR = "thumbnail_cache"
 THUMBNAIL_SIZE = (300, 300)
 
 _progress = {

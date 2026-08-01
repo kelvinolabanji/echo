@@ -25,7 +25,21 @@ namespace EchoApp
         {
             _onHotkey = onHotkey;
             _window = new HotkeyWindow(onHotkey);
-            RegisterHotKey(_window.Handle, HOTKEY_ID, MOD_WIN | MOD_SHIFT, VK_F);
+
+            bool registered = RegisterHotKey(_window.Handle, HOTKEY_ID, MOD_WIN | MOD_SHIFT, VK_F);
+            if (!registered)
+            {
+                // Fails silently by default if another running app already owns
+                // this combo (a Chrome extension, another utility, etc.) —
+                // surfacing it here instead of leaving the hotkey just not work
+                // with no explanation.
+                MessageBox.Show(
+                    "Echo couldn't register the Win+Shift+F hotkey — another " +
+                    "running app is probably already using it (check browser " +
+                    "extension shortcuts, screen recorders, etc.). Echo will " +
+                    "still work from the tray icon menu.",
+                    "Echo — hotkey unavailable");
+            }
         }
 
         public void Dispose()

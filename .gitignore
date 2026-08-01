@@ -3,8 +3,14 @@ frontend/EchoApp/bin/
 frontend/EchoApp/obj/
 __pycache__/
 *.pyc
-*.db
-*.index
 models/
 .env
-backend\thumbnail_cache
+backend/thumbnail_cache/
+backend/build/
+backend/dist/
+installer_output/
+.vs/
+.vscode/
+*.user
+
+# echo.db and echo.index are intentionally tracked (kept for portfolio purposes)

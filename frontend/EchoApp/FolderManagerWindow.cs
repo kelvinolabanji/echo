@@ -115,6 +115,17 @@ namespace EchoApp
         {
             this.Show();
             this.Activate();
+
+            // folders.html only fetches data once, on the page's initial 'load'
+            // event — which already fired back when this window was first
+            // constructed, likely before any folder had actually been indexed
+            // yet. Showing the window again later doesn't re-navigate the page,
+            // so without this, the list stays frozen at that first empty
+            // snapshot forever. Explicitly re-running the page's own refresh
+            // functions here means every call to ShowManager() (from the tray
+            // menu, or from the first-run auto-index flow) sees current data.
+            _webView?.CoreWebView2?.ExecuteScriptAsync(
+                "if (typeof loadFolders === 'function') { loadFolders(); checkProgress(); }");
         }
 
         protected override void OnLoad(EventArgs e)
