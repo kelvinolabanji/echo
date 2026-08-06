@@ -3,7 +3,7 @@
 A fully local, offline semantic image search tool for Windows. Describe what you're looking for in plain English — "sunset over water," "my dog on the couch," "receipt from last week" — and Echo finds matching photos instantly, without ever sending anything to the cloud.
 
 No account. No internet required after setup. No cloud storage of your photos or their embeddings. Everything runs on your machine.
-
+![Echo search demo](screenshots/search-demo.gif)
 ## How it works
 
 Echo indexes your photos locally using [CLIP](https://github.com/openai/CLIP) (`openai/clip-vit-base-patch32`), which turns both images and text descriptions into vectors in the same embedding space. Searching just means turning your query into a vector and finding the closest image vectors with [FAISS](https://github.com/facebookresearch/faiss). All of this happens on-device — the model, the index, and your photos never leave your computer.
