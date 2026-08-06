@@ -3,6 +3,7 @@
 A fully local, offline semantic image search tool for Windows. Describe what you're looking for in plain English — "sunset over water," "my dog on the couch," "receipt from last week" — and Echo finds matching photos instantly, without ever sending anything to the cloud.
 
 No account. No internet required after setup. No cloud storage of your photos or their embeddings. Everything runs on your machine.
+
 ![Echo search demo](screenshots/search-demo.gif)
 ## How it works
 
