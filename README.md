@@ -17,7 +17,7 @@ Echo indexes your photos locally using [CLIP](https://github.com/openai/CLIP) (`
 - **Live folder management** — add/remove indexed folders, with real-time progress
 - **File system watching** — new photos dropped into an indexed folder get picked up automatically
 - **Tray notifications** for indexing start/completion
-- **Frosted-glass UI** that feels like a native Windows feature, not a third-party app
+- **UI** that feels like a native Windows feature, not a third-party app
 - **Fully offline** — after initial setup, no internet connection is required
 
 ## Tech stack
