@@ -98,7 +98,7 @@ dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=
 
 ## Known limitations
 
-- CLIP performs noticeably better on real photos than on stylized/animated content (wallpapers, posters, cartoon screenshots)
+- CLIP performs slighty better on real photos than on stylized/animated content (wallpapers, posters, cartoon screenshots)
 - Windows only (WinForms + WebView2)
 
 ## Roadmap
