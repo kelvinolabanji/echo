@@ -10,9 +10,7 @@ namespace EchoApp
     {
         private static Process? _backendProcess;
 
-        // Backend lives in a subfolder, not next to EchoApp.exe — this matches
-        // both the installer layout (echo-setup.iss extracts the frontend only)
-        // and where BackendDownloader.cs extracts the downloaded package to.
+        // Path where the backend executable is stored relative to the app
         private static string BackendDir =>
             Path.Combine(Application.StartupPath, "backend");
 
@@ -20,9 +18,7 @@ namespace EchoApp
             Path.Combine(BackendDir, "echo-backend.exe");
 
         /// <summary>
-        /// Ensures the backend package is present (downloading it on first run
-        /// if needed) and starts it. Call this instead of StartBackend() directly
-        /// so a fresh install doesn't try to spawn a process that doesn't exist yet.
+        /// Downloads the backend package on initial launch if missing, then starts the backend process.
         /// </summary>
         public static async Task<bool> EnsureAndStartBackendAsync(
             IProgress<(double fraction, string status)>? downloadProgress = null)
@@ -58,11 +54,7 @@ namespace EchoApp
                 var startInfo = new ProcessStartInfo
                 {
                     FileName = BackendExePath,
-                    // Critical: without this, the backend's cwd defaults to
-                    // EchoApp's own folder, not its own subfolder — which used
-                    // to matter for relative-path data files (now fixed on the
-                    // Python side too, but this is still correct practice).
-                    WorkingDirectory = BackendDir,
+                    WorkingDirectory = BackendDir, // Set working directory to backend subfolder
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     WindowStyle = ProcessWindowStyle.Hidden
