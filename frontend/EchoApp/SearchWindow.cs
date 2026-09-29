@@ -15,7 +15,7 @@ namespace EchoApp
         [DllImport("dwmapi.dll")]
         private static extern int DwmSetWindowAttribute(IntPtr hwnd, uint attr, ref int attrValue, int attrSize);
 
-        // --- Windows DWM P/Invoke for OS Desktop Blur ---
+        // Windows DWM P/Invoke declarations for desktop blur effects
         [DllImport("user32.dll")]
         private static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
 
@@ -66,7 +66,7 @@ namespace EchoApp
             this.StartPosition = FormStartPosition.Manual;
             this.Size = new Size(1000, 700);
             
-            // CRITICAL: Must be Black (or null) so it doesn't wash out the acrylic blur with solid white.
+            // Set background to Black so solid white doesn't wash out the acrylic blur
             this.BackColor = Color.Black; 
             
             this.ShowInTaskbar = false;
@@ -101,7 +101,7 @@ namespace EchoApp
             var accent = new AccentPolicy
             {
                 AccentState = AccentState.ACCENT_ENABLE_ACRYLICBLURBEHIND,
-                // 0xTTBBGGRR format. 0x20FFFFFF adds a very subtle 12% white tint to the desktop blur.
+                // Subtle 12% white tint applied to the desktop blur background (0xTTBBGGRR format)
                 GradientColor = 0x20FFFFFF 
             };
 
@@ -137,7 +137,7 @@ namespace EchoApp
             int round = DWMWCP_ROUND;
             DwmSetWindowAttribute(Handle, DWMWA_WINDOW_CORNER_PREFERENCE, ref round, sizeof(int));
 
-            // Activate native Windows blur immediately when form loads
+            // Enable acrylic blur on initial window load
             EnableAcrylicBlur();
 
             this.Hide();
