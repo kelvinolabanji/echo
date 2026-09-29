@@ -26,13 +26,11 @@ namespace EchoApp
             _onHotkey = onHotkey;
             _window = new HotkeyWindow(onHotkey);
 
+            // Register global Win+Shift+F hotkey
             bool registered = RegisterHotKey(_window.Handle, HOTKEY_ID, MOD_WIN | MOD_SHIFT, VK_F);
             if (!registered)
             {
-                // Fails silently by default if another running app already owns
-                // this combo (a Chrome extension, another utility, etc.) —
-                // surfacing it here instead of leaving the hotkey just not work
-                // with no explanation.
+                // Notify user if another application has already bound this key combination
                 MessageBox.Show(
                     "Echo couldn't register the Win+Shift+F hotkey — another " +
                     "running app is probably already using it (check browser " +
