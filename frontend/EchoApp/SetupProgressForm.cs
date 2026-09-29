@@ -5,10 +5,7 @@ using System.Windows.Forms;
 namespace EchoApp
 {
     /// <summary>
-    /// Simple modal progress window shown only on first run, while the
-    /// backend + CLIP weights are being downloaded. Doesn't try to match the
-    /// frosted-glass aesthetic of SearchWindow/FolderManagerWindow — this is
-    /// a one-time setup step, a plain window is fine and simpler to keep working.
+    /// Displays first-run setup progress while downloading the backend and AI model weights.
     /// </summary>
     public class SetupProgressForm : Form
     {
@@ -58,6 +55,7 @@ namespace EchoApp
 
         public void Report(double fraction, string status)
         {
+            // Marshal call back to the UI thread if called from a background task
             if (InvokeRequired)
             {
                 BeginInvoke(new Action(() => Report(fraction, status)));
