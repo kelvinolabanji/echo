@@ -24,12 +24,8 @@ namespace EchoApp
             _searchWindow = new SearchWindow();
             _folderManagerWindow = new FolderManagerWindow();
 
-            // Prime FolderManagerWindow's handle now, the same way _searchWindow
-            // gets primed below via HotkeyManager's constructor. Both windows'
-            // OnLoad hides them once as part of first-time setup — if we don't
-            // force that to happen here, the FIRST real ShowManager() call later
-            // (from RunFirstLaunchSetupAsync) would trigger OnLoad's one-time
-            // Hide() and the window would flash and vanish instead of staying open.
+            // Force creation of the window handle so OnLoad runs now rather than 
+            // flashing and hiding on the first call to ShowManager() later.
             _ = _folderManagerWindow.Handle;
 
             Icon trayIconImage;
@@ -39,7 +35,7 @@ namespace EchoApp
             }
             catch
             {
-                trayIconImage = SystemIcons.Application; // fallback if the file's missing
+                trayIconImage = SystemIcons.Application; // Default fallback icon
             }
 
             _trayIcon = new NotifyIcon()
@@ -62,21 +58,12 @@ namespace EchoApp
         }
 
         /// <summary>
-        /// On a genuine first run (backend reports zero indexed folders),
-        /// automatically starts indexing the user's Pictures folder and opens
-        /// the Folder Manager so they can see/adjust it. On every later run,
-        /// the backend already has folders and this is a no-op.
-        ///
-        /// CLIP/torch take a while to load before uvicorn actually starts
-        /// accepting connections — this retries with a short delay instead of
-        /// giving up after one attempt.
+        /// Indexes Pictures by default on initial launch and opens Folder Manager.
+        /// Retries with a delay while waiting for the Python backend to finish starting up.
         /// </summary>
         private async Task RunFirstLaunchSetupAsync()
         {
-            const int maxAttempts = 60;      // ~2 minutes total at 2s apart —
-                                              // CLIP/torch cold start has taken
-                                              // up to ~90s on a loaded machine,
-                                              // so this needs real margin
+            const int maxAttempts = 60; // Up to ~2 minutes to allow for backend model loading
             const int delayMs = 2000;
 
             for (int attempt = 1; attempt <= maxAttempts; attempt++)
@@ -90,7 +77,7 @@ namespace EchoApp
                         && doc.RootElement.GetArrayLength() > 0;
 
                     if (hasAnyFolders)
-                        return; // not first run — user already has folders configured
+                        return; // Folders are already configured
 
                     string picturesPath = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
                     if (Directory.Exists(picturesPath))
@@ -101,15 +88,13 @@ namespace EchoApp
                     }
 
                     _folderManagerWindow.ShowManager();
-                    return; // succeeded — stop retrying
+                    return;
                 }
                 catch
                 {
-                    // Most likely the backend just isn't listening yet. Wait
-                    // and try again rather than giving up after one attempt.
+                    // Backend isn't ready yet; keep retrying until max attempts
                     if (attempt == maxAttempts)
-                        return; // backend genuinely never came up — give up quietly,
-                                // user can still add folders manually via the tray menu
+                        return;
                 }
 
                 await Task.Delay(delayMs);
