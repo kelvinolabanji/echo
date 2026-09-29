@@ -1,8 +1,7 @@
 // BackendDownloader.cs
 //
-// Ensures the backend (echo-backend.exe + CLIP weights) is present before
-// EchoApp spawns it. On first run after install, downloads the backend
-// package from GitHub Releases, verifies its checksum, and extracts it.
+// Downloads, verifies, and unpacks the standalone echo-backend package from 
+// GitHub Releases if it isn't present on initial startup.
 
 using System;
 using System.IO;
@@ -19,8 +18,7 @@ namespace EchoApp
         private const string BackendDownloadUrl =
             "https://github.com/kelvinolabanji/echo/releases/download/v1.0.1/echo-backend.zip";
 
-        // SHA-256 of the zip file itself. Compute with:
-        //   certutil -hashfile echo-backend.zip SHA256
+        // Expected SHA-256 hash of echo-backend.zip
         private const string ExpectedSha256 = "84b3e043caefd34c10bd679a723b5da624d01b152d7a315fa6a673262a26bd9b";
 
         private readonly string _appDir;
@@ -37,9 +35,8 @@ namespace EchoApp
         public bool IsBackendInstalled => File.Exists(_backendExePath);
 
         /// <summary>
-        /// Returns immediately if the backend is already present.
-        /// Otherwise downloads, verifies, and extracts it, reporting
-        /// 0.0-1.0 progress split roughly 90% download / 10% extract.
+        /// Downloads, verifies, and extracts the backend executable if it isn't found locally.
+        /// Reports 0.0-1.0 progress across downloading and extraction.
         /// </summary>
         public async Task<bool> EnsureBackendInstalledAsync(
             IProgress<(double fraction, string status)> progress,
@@ -61,33 +58,25 @@ namespace EchoApp
                 {
                     throw new InvalidDataException(
                         "Downloaded backend package failed checksum verification. " +
-                        "The download may be corrupted or the hosted file was updated " +
-                        "without updating ExpectedSha256.");
+                        "The download may be corrupted or ExpectedSha256 needs an update.");
                 }
 
                 progress?.Report((0.93, "Extracting..."));
-                // Extract to a staging dir first so a failed/cancelled extract
-                // never leaves a half-populated backend folder behind.
+                // Extract to a staging directory to prevent leaving partial files if interrupted
                 string stagingDir = _backendDir + "_staging";
                 if (Directory.Exists(stagingDir))
                     Directory.Delete(stagingDir, recursive: true);
 
                 ZipFile.ExtractToDirectory(tempZipPath, stagingDir);
 
-                // Handle either zip layout: echo-backend.exe sitting right at
-                // the zip's root, OR nested one level inside a wrapper folder
-                // (this happens if the zip was made via right-click -> "Send to
-                // -> Compressed folder" on the echo-backend folder itself,
-                // rather than zipping its contents). Searching for the exe and
-                // promoting whatever folder actually contains it handles both.
+                // Handle zip files whether echo-backend.exe is in the root or nested inside a folder
                 string[] matches = Directory.GetFiles(
                     stagingDir, "echo-backend.exe", SearchOption.AllDirectories);
 
                 if (matches.Length == 0)
                 {
                     throw new FileNotFoundException(
-                        "echo-backend.exe was not found anywhere inside the " +
-                        "downloaded package. Check how echo-backend.zip was built.");
+                        "echo-backend.exe was not found inside the downloaded zip package.");
                 }
 
                 string actualBackendRoot = Path.GetDirectoryName(matches[0])!;
@@ -97,8 +86,7 @@ namespace EchoApp
 
                 Directory.Move(actualBackendRoot, _backendDir);
 
-                // Clean up the staging dir — if the exe was nested, this removes
-                // the now-empty wrapper folder left behind alongside it.
+                // Clean up remaining staging files
                 if (Directory.Exists(stagingDir))
                     Directory.Delete(stagingDir, recursive: true);
 
@@ -109,7 +97,7 @@ namespace EchoApp
             {
                 if (File.Exists(tempZipPath))
                 {
-                    try { File.Delete(tempZipPath); } catch { /* best effort cleanup */ }
+                    try { File.Delete(tempZipPath); } catch { /* Ignore cleanup errors */ }
                 }
             }
         }
@@ -122,9 +110,7 @@ namespace EchoApp
         {
             using var httpClient = new HttpClient
             {
-                // First-run download of a large ML package over a slow connection
-                // is exactly the scenario a short timeout breaks.
-                Timeout = TimeSpan.FromMinutes(30)
+                Timeout = TimeSpan.FromMinutes(30) // Extended timeout for slow connections
             };
 
             using var response = await httpClient.GetAsync(
@@ -147,7 +133,7 @@ namespace EchoApp
 
                 if (totalBytes.HasValue)
                 {
-                    // Reserve the last 10% of the progress bar for verify + extract
+                    // Scale download progress up to 90% to leave room for verification and extraction
                     double fraction = 0.90 * ((double)totalRead / totalBytes.Value);
                     double mb = totalRead / 1024.0 / 1024.0;
                     double totalMb = totalBytes.Value / 1024.0 / 1024.0;
