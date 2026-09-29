@@ -1,30 +1,16 @@
 # echo-backend.spec
-# Build with: pyinstaller echo-backend.spec
+# Run: pyinstaller echo-backend.spec
 #
-# Produces a single standalone echo-backend.exe that bundles Python,
-# torch, transformers, faiss, uvicorn, and the local CLIP weights folder.
-# No Python install required on the target machine.
-
-# ---------------------------------------------------------------------------
-# NOTES BEFORE YOU RUN THIS
-# ---------------------------------------------------------------------------
-# 1. Run this from inside backend/, with your .venv (Python 3.11) activated.
-# 2. torch + transformers are notorious for PyInstaller missing hidden imports
-#    and dynamically-loaded submodules. If the exe crashes on first run with
-#    a ModuleNotFoundError, add the missing module to hiddenimports below.
-# 3. Test the exe in isolation first:
-#      dist\echo-backend\echo-backend.exe
-#    then curl http://127.0.0.1:8000/stats before wiring it into EchoApp.
-# 4. --add-data paths use ';' as separator on Windows, ':' on Mac/Linux.
-# ---------------------------------------------------------------------------
+# Packages Python, PyTorch, Transformers, FAISS, Uvicorn, and our local CLIP model
+# into a standalone executable—no Python installation needed on the target machine.
 
 import sys
 from PyInstaller.utils.hooks import collect_all
 
 block_cipher = None
 
-# collect_all pulls in submodules, data files, and binaries these packages
-# need that PyInstaller's static analysis misses on its own
+# Heavy ML libraries often load dynamic modules at runtime that PyInstaller’s
+# static scanner misses, so we grab their binaries, data, and hidden imports explicitly.
 datas = []
 binaries = []
 hiddenimports = []
@@ -35,10 +21,10 @@ for pkg in ('torch', 'transformers', 'faiss'):
     binaries += pkg_binaries
     hiddenimports += pkg_hiddenimports
 
-# Bundle the local CLIP model weights folder so no download happens at runtime.
-# Source path is relative to this spec file; adjust if your layout differs.
+# Copy local CLIP weights so the app works completely offline
 datas += [('models/clip', 'models/clip')]
 
+# Standard Uvicorn internals needed when running as an executable
 hiddenimports += [
     'uvicorn.logging',
     'uvicorn.loops',
@@ -80,7 +66,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,   # no visible console window when EchoApp spawns this
+    console=False,  # Runs silently in the background when launched by EchoApp
     disable_windowed_traceback=False,
     target_arch=None,
     codesign_identity=None,
