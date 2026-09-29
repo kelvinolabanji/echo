@@ -5,17 +5,8 @@ using System.Windows.Forms;
 namespace EchoApp
 {
     /// <summary>
-    /// Runs first, inside Application.Run's message loop. Kicks off the backend
-    /// download/start as a background task, shows SetupProgressForm only if a
-    /// download is actually needed, then hands off to the real AppContext.
-    ///
-    /// Why this exists instead of just awaiting in Program.cs: doing the await
-    /// BEFORE Application.Run() starts deadlocks, because WinForms can only
-    /// deliver "the awaited task finished" back to your code by pumping
-    /// messages — and that pump doesn't exist until Application.Run() is
-    /// already running. Doing the async work as this context's very first
-    /// action means the message loop is already live when the continuation
-    /// needs to fire.
+    /// Initial application context that runs during Application.Run().
+    /// Handles first-time setup UI, starts the backend, then launches the main AppContext.
     /// </summary>
     public class BootstrapAppContext : ApplicationContext
     {
@@ -33,6 +24,7 @@ namespace EchoApp
 
             var downloader = new BackendDownloader();
 
+            // Only show setup form if backend assets need to be downloaded
             if (!downloader.IsBackendInstalled)
             {
                 _progressForm = new SetupProgressForm();
@@ -49,17 +41,14 @@ namespace EchoApp
 
             if (!started)
             {
-                // Error already shown inside EnsureAndStartBackendAsync.
                 Application.Exit();
                 return;
             }
 
+            // Ensure the backend process is terminated when the app exits
             Application.ApplicationExit += (s, e) => BackendManager.StopBackend();
 
-            // Hand off to the real app (tray icon, hotkey, search/folder windows).
-            // Application.Exit() from AppContext's tray menu still works correctly
-            // from here — it ends the whole message loop regardless of which
-            // ApplicationContext Application.Run() was originally called with.
+            // Hand off execution to the main application context
             _mainAppContext = new AppContext();
         }
     }
