@@ -9,14 +9,13 @@ namespace EchoApp
         [STAThread]
         static void Main()
         {
+            // Ensure only a single instance of Echo runs at a time
             using var mutex = new Mutex(true, "EchoApp_SingleInstance", out bool isNewInstance);
             if (!isNewInstance) return;
 
             ApplicationConfiguration.Initialize();
 
-            // BootstrapAppContext kicks off backend setup (downloading it on
-            // first run if needed) as its first action once the message loop
-            // is already running, then hands off to the real AppContext.
+            // Run application via BootstrapAppContext to handle initial setup before launching main context
             Application.Run(new BootstrapAppContext());
         }
     }
