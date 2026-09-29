@@ -9,10 +9,7 @@ using System.Windows.Forms;
 namespace EchoApp
 {
     /// <summary>
-    /// Polls /index/progress for the lifetime of the app and shows a tray
-    /// balloon tip whenever an indexing run starts or finishes — covers both
-    /// the automatic first-run Pictures scan and any folder the user adds
-    /// manually later, since both go through the same backend progress state.
+    /// Polls backend indexing progress and displays system tray notifications when indexing starts or completes.
     /// </summary>
     public class IndexingWatcher : IDisposable
     {
@@ -55,6 +52,7 @@ namespace EchoApp
                     int skipped = root.TryGetProperty("skipped", out var skippedProp)
                         ? skippedProp.GetInt32() : 0;
 
+                    // Trigger balloon notification when an indexing run starts
                     if (running && !_wasRunning)
                     {
                         string folderName = string.IsNullOrEmpty(folder)
@@ -64,6 +62,7 @@ namespace EchoApp
                         _trayIcon.BalloonTipText = $"Indexing started: {folderName}";
                         _trayIcon.ShowBalloonTip(3000);
                     }
+                    // Trigger balloon notification when an indexing run completes
                     else if (!running && _wasRunning)
                     {
                         string suffix = skipped > 0 ? $" ({skipped} already up to date)" : "";
@@ -77,8 +76,7 @@ namespace EchoApp
                 }
                 catch
                 {
-                    // Backend not reachable yet, or a transient hiccup — just
-                    // try again next tick rather than surfacing every miss.
+                    // Ignore network or connection errors when backend is initializing
                 }
 
                 try
